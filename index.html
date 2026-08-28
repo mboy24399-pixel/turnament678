@@ -2377,15 +2377,11 @@
             }
         }
 
-        // ==================================================
-        // Premium / Razorpay
-        // ==================================================
         function openUpgradeFlow() {
-            // PUBLIC Razorpay Payment Link URL - replace with your actual public link
-            const razorpayPaymentLink = 'https://rzp.io/rzp/FLp2RSf';
-            showToast('Opening secure payment page...', 'info');
-            window.open(razorpayLink, '_blank');
-        }
+    const razorpayPaymentLink = 'https://rzp.io/rzp/FLp2RSf';
+    showToast('Opening secure payment page...', 'info');
+    window.open(razorpayPaymentLink, '_blank');
+}
 
         // ==================================================
         // Event Listeners
