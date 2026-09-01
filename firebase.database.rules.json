@@ -14,8 +14,9 @@
       ".read": false
     },
     "users": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$uid": {
-        ".read": "auth != null && $uid === auth.uid"
+        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)"
       }
     },
     "accounts": {
