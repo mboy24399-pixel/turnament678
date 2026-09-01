@@ -4,53 +4,69 @@
     ".write": false,
     "tournaments": {
       ".read": "auth != null",
-      "$tid": {
-        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
-        "registrations": {
-          "$uid": {
-            ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)",
-            ".validate": "newData.hasChildren(['userId','displayName']) && newData.child('userId').val() === $uid"
-          }
-        }
-      }
+      ".indexOn": ["status", "startAt", "registrationDeadline", "game"]
+    },
+    "tournamentParticipants": {
+      ".read": "auth != null",
+      ".indexOn": ["status", "joinedAt"]
+    },
+    "tournamentSeats": {
+      ".read": false
     },
     "users": {
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)",
-        ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)"
+        ".read": "auth != null && $uid === auth.uid"
+      }
+    },
+    "accounts": {
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid"
+      }
+    },
+    "wallet": {
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid"
       }
     },
     "matches": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".indexOn": ["tournamentId", "status", "updatedAt"]
     },
     "matchesByUser": {
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)",
-        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+        ".read": "auth != null && $uid === auth.uid"
       }
     },
     "leaderboard": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".indexOn": ["points"]
     },
-    "wallet": {
-      "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)",
-        ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
-      }
+    "tasks": {
+      ".read": "auth != null",
+      ".indexOn": ["active", "createdAt"]
     },
     "notifications": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".indexOn": ["createdAt", "active"]
     },
     "announcements": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".indexOn": ["createdAt", "active"]
+    },
+    "adConfig": {
+      ".read": "auth != null"
     },
     "admins": {
-      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
-      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+      ".read": false,
+      ".write": false
+    },
+    "operations": {
+      ".read": false,
+      ".write": false
+    },
+    "audit": {
+      ".read": false,
+      ".write": false
     }
   }
 }
