@@ -3,12 +3,11 @@
     ".read": false,
     ".write": false,
     "tournaments": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["status", "startAt", "registrationDeadline", "game"]
     },
     "tournamentParticipants": {
-      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
-      ".indexOn": ["status", "joinedAt"]
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true"
     },
     "tournamentSeats": {
       ".read": false
@@ -30,7 +29,7 @@
       }
     },
     "matches": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["tournamentId", "status", "updatedAt"]
     },
     "matchesByUser": {
@@ -39,23 +38,23 @@
       }
     },
     "leaderboard": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["points"]
     },
     "tasks": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["active", "createdAt"]
     },
     "notifications": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["createdAt", "active"]
     },
     "announcements": {
-      ".read": "auth != null",
+      ".read": true,
       ".indexOn": ["createdAt", "active"]
     },
     "adConfig": {
-      ".read": "auth != null"
+      ".read": true
     },
     "admins": {
       ".read": false,
