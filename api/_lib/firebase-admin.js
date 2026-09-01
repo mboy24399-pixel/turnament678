@@ -1,9 +1,9 @@
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { cert, getApp, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getAppCheck } from 'firebase-admin/app-check';
 import { getDatabase } from 'firebase-admin/database';
 
 let cached;
+let appCheckModulePromise;
 
 function required(name) {
   const value = process.env[name];
@@ -23,20 +23,55 @@ function requiredUrl(name) {
   return parsed.toString().replace(/\/$/, '');
 }
 
+function normalizePrivateKey(value) {
+  const key = String(value || '').replace(/\\n/g, '\n').trim();
+  if (!key.includes('BEGIN PRIVATE KEY') || !key.includes('END PRIVATE KEY')) {
+    throw new Error('Invalid FIREBASE_PRIVATE_KEY');
+  }
+  return key;
+}
+
+function getAdminApp(projectId, clientEmail, privateKey, databaseURL) {
+  if (getApps().length) {
+    const existing = getApp();
+    const existingProjectId = String(existing.options?.projectId || '').trim();
+    const existingDatabaseUrl = String(existing.options?.databaseURL || '').trim().replace(/\/$/, '');
+    if (existingProjectId && existingProjectId !== projectId) {
+      throw new Error('Firebase Admin project mismatch');
+    }
+    if (existingDatabaseUrl && existingDatabaseUrl !== databaseURL) {
+      throw new Error('Firebase Admin database URL mismatch');
+    }
+    return existing;
+  }
+  return initializeApp({
+    credential: cert({ projectId, clientEmail, privateKey }),
+    databaseURL,
+  });
+}
+
 export function adminServices() {
   if (cached) return cached;
   const projectId = required('FIREBASE_PROJECT_ID');
   const clientEmail = required('FIREBASE_CLIENT_EMAIL');
-  if (!clientEmail.includes('@')) throw new Error('Invalid FIREBASE_CLIENT_EMAIL');
-  const privateKey = required('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n');
-  if (!privateKey.includes('BEGIN PRIVATE KEY')) throw new Error('Invalid FIREBASE_PRIVATE_KEY');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+    throw new Error('Invalid FIREBASE_CLIENT_EMAIL');
+  }
+  const privateKey = normalizePrivateKey(required('FIREBASE_PRIVATE_KEY'));
   const databaseURL = requiredUrl('FIREBASE_DATABASE_URL');
-  const app = getApps().length ? getApps()[0] : initializeApp({
-    credential: cert({ projectId, clientEmail, privateKey }),
-    databaseURL,
-  });
-  cached = { app, auth: getAuth(app), appCheck: getAppCheck(app), db: getDatabase(app) };
+  const app = getAdminApp(projectId, clientEmail, privateKey, databaseURL);
+  cached = {
+    app,
+    auth: getAuth(app),
+    db: getDatabase(app),
+  };
   return cached;
+}
+
+async function getAppCheck() {
+  if (!appCheckModulePromise) appCheckModulePromise = import('firebase-admin/app-check');
+  const mod = await appCheckModulePromise;
+  return mod.getAppCheck(adminServices().app);
 }
 
 export async function verifyRequest(req, { adminOnly = false } = {}) {
@@ -52,7 +87,9 @@ export async function verifyRequest(req, { adminOnly = false } = {}) {
     error.status = 401;
     throw error;
   }
-  const { auth, appCheck, db } = adminServices();
+
+  const { auth, db } = adminServices();
+
   if (String(process.env.ENFORCE_APP_CHECK || '').toLowerCase() === 'true') {
     const appCheckToken = req.headers['x-firebase-appcheck'];
     if (!appCheckToken) {
@@ -61,21 +98,26 @@ export async function verifyRequest(req, { adminOnly = false } = {}) {
       throw error;
     }
     try {
+      const appCheck = await getAppCheck();
       await appCheck.verifyToken(String(appCheckToken));
-    } catch {
+    } catch (cause) {
+      console.error('app_check_error', cause?.message || cause);
       const error = new Error('Invalid App Check token');
       error.status = 401;
       throw error;
     }
   }
+
   let decoded;
   try {
     decoded = await auth.verifyIdToken(token, true);
-  } catch {
+  } catch (cause) {
+    console.error('auth_token_error', cause?.message || cause);
     const error = new Error('Invalid or expired authentication token');
     error.status = 401;
     throw error;
   }
+
   const adminSnap = await db.ref(`admins/${decoded.uid}`).get();
   const isAdmin = adminSnap.val() === true;
   if (adminOnly && !isAdmin) {
