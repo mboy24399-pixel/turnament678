@@ -900,16 +900,11 @@
         import { getDatabase, ref, get, set, update, push, query, orderByChild, equalTo, onValue, off, remove, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyAJ032FXcGLWEA3mLtfNrcmtCEb_AU2lS0",
-  authDomain: "adix-clash.firebaseapp.com",
-  databaseURL: "https://adix-clash-default-rtdb.firebaseio.com",
-  projectId: "adix-clash",
-  storageBucket: "adix-clash.firebasestorage.app",
-  messagingSenderId: "35819475257",
-  appId: "1:35819475257:web:c40908a5d03213dccc98e8",
-  measurementId: "G-R6BY3PP4JS"
-};
+        const firebaseConfigResponse = await fetch("/api/firebase-config", { cache: "no-store" });
+if (!firebaseConfigResponse.ok) {
+    throw new Error(`Firebase config endpoint failed: ${firebaseConfigResponse.status}`);
+}
+const firebaseConfig = await firebaseConfigResponse.json();
         
         let app, db, auth;
         try {
