@@ -11,12 +11,26 @@ function required(name) {
   return String(value).trim();
 }
 
+function requiredUrl(name) {
+  const value = required(name);
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`Invalid ${name}`);
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error(`Invalid ${name}`);
+  return parsed.toString().replace(/\/$/, '');
+}
+
 export function adminServices() {
   if (cached) return cached;
   const projectId = required('FIREBASE_PROJECT_ID');
   const clientEmail = required('FIREBASE_CLIENT_EMAIL');
+  if (!clientEmail.includes('@')) throw new Error('Invalid FIREBASE_CLIENT_EMAIL');
   const privateKey = required('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n');
-  const databaseURL = required('FIREBASE_DATABASE_URL');
+  if (!privateKey.includes('BEGIN PRIVATE KEY')) throw new Error('Invalid FIREBASE_PRIVATE_KEY');
+  const databaseURL = requiredUrl('FIREBASE_DATABASE_URL');
   const app = getApps().length ? getApps()[0] : initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
     databaseURL,
@@ -46,9 +60,22 @@ export async function verifyRequest(req, { adminOnly = false } = {}) {
       error.status = 401;
       throw error;
     }
-    await appCheck.verifyToken(String(appCheckToken));
+    try {
+      await appCheck.verifyToken(String(appCheckToken));
+    } catch {
+      const error = new Error('Invalid App Check token');
+      error.status = 401;
+      throw error;
+    }
   }
-  const decoded = await auth.verifyIdToken(token, true);
+  let decoded;
+  try {
+    decoded = await auth.verifyIdToken(token, true);
+  } catch {
+    const error = new Error('Invalid or expired authentication token');
+    error.status = 401;
+    throw error;
+  }
   const adminSnap = await db.ref(`admins/${decoded.uid}`).get();
   const isAdmin = adminSnap.val() === true;
   if (adminOnly && !isAdmin) {
