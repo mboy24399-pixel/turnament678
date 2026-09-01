@@ -1,11 +1,11 @@
 {
   "name": "podmen-x-tournament-arena",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "engines": { "node": "22.x" },
   "scripts": {
     "build": "node --check app.js && node --check admin.js && node --check api/command.js && node --check api/firebase-config.js && node --check api/health.js && node --check api/_lib/firebase-admin.js"
   },
-  "dependencies": { "firebase-admin": "14.3.0" }
+  "dependencies": { "firebase-admin": "13.6.1" }
 }
