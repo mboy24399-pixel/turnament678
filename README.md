@@ -10,7 +10,7 @@ Production-oriented Firebase Realtime Database + Vercel tournament web app. This
 - Real-time matches and player match feed
 - Admin-controlled tournaments, tasks, coin adjustments, results, announcements, notifications and ad configuration
 - Firebase Email/Password admin authentication
-- Anonymous player authentication with protected server commands
+- Google player authentication for protected actions
 - Firebase Realtime Database security rules with client writes disabled for privileged data
 - Optional Firebase App Check / reCAPTCHA Enterprise enforcement for the custom backend
 - Security headers and a content security policy
@@ -27,6 +27,8 @@ The browser must never receive a Firebase service-account private key.
 ## Vercel environment variables
 
 ### Public Firebase Web configuration
+
+Required:
 
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
@@ -59,7 +61,7 @@ Only enable App Check enforcement after the Web app is registered in Firebase Ap
 
 ## Firebase setup
 
-1. Enable Anonymous authentication for players.
+1. Enable Google authentication for players.
 2. Enable Email/Password authentication for the admin account.
 3. Create the Realtime Database.
 4. Apply `firebase.database.rules.json` in Realtime Database → Rules.
@@ -89,8 +91,10 @@ The application has an ad configuration layer and a safe Google AdSense integrat
 ## Production verification
 
 - `/api/health` must return HTTP 200 with `ok: true`.
-- The browser must show `● Live` after Firebase authentication.
+- The browser must show `● Live` after Firebase initialization.
 - Tournament and account data should update without a page refresh.
 - Privileged writes should go only through `/api/command`.
+
+If `/api/firebase-config` returns `Firebase configuration is incomplete`, the response includes the exact missing `NEXT_PUBLIC_FIREBASE_*` variables. Do not put Firebase Admin private keys into any `NEXT_PUBLIC_*` variable.
 
 No demo balances, fake tournaments or hard-coded production data are included by this repository.
