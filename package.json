@@ -5,7 +5,7 @@
   "type": "module",
   "engines": { "node": "22.x" },
   "scripts": {
-    "build": "node --check app.js && node --check admin.js && node --check api/command.js && node --check api/firebase-config.js && node --check api/health.js && node --check api/_lib/firebase-admin.js"
+    "build": "node --check app.js && node --check admin.js && node --check api/command.js && node --check api/firebase-config.js && node --check api/health.js && node --check api/ping.js && node --check api/_lib/firebase-admin.js"
   },
   "dependencies": { "firebase-admin": "13.6.1" }
 }
