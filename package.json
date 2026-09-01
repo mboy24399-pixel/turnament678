@@ -1,0 +1,8 @@
+{
+  "name": "podmen-x-tournament-arena",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "dependencies": { "firebase-admin": "14.3.0" }
+}
