@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+
+# Firebase / Google service-account credentials
+*service-account*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
+firebase-service-account.json
+
+# Local tooling
+.vercel/
+node_modules/
+.DS_Store
