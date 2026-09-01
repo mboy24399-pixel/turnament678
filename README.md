@@ -1,12 +1,27 @@
-# Podmen
+# Podmen X Tournament Arena
 
-Static Firebase tournament app for Vercel.
+Firebase-backed tournament web app for Vercel.
 
-## Vercel setup
+## Player app
 
-This repository must be deployed from **mboy24399-pixel/Podmen-**. Do not point the Vercel project at a different repository.
+- Tournament discovery and search
+- Open/live/upcoming/completed filters
+- Registration with capacity checks
+- Player profile and game ID
+- Personal match feed
+- Leaderboard
+- Wallet read-only view
+- Announcements/notifications hooks
 
-Set these seven **Production** environment variables in the Vercel project:
+## Admin app
+
+Open `/admin.html` after deployment.
+
+Admin access uses Firebase Email/Password authentication plus an `admins/{uid}: true` flag in Realtime Database. Admins can publish/close tournaments, record match results, and publish announcements.
+
+## Firebase / Vercel
+
+Set these seven **Production** environment variables in Vercel:
 
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
@@ -18,13 +33,19 @@ Set these seven **Production** environment variables in the Vercel project:
 
 The values come from Firebase Console → Project settings → Your apps → Web app configuration.
 
-Do **not** commit a Firebase service-account/Admin SDK JSON file. The browser app uses the Firebase Web SDK; the `/api/firebase-config` function reads the seven Vercel environment variables at request time.
+Do **not** commit a Firebase service-account/Admin SDK JSON. The browser uses the Firebase Web SDK; `/api/firebase-config` reads the seven Vercel variables at request time.
+
+## Database rules
+
+`firebase.database.rules.json` contains the intended Realtime Database security model:
+
+- Players can read public tournament/match/leaderboard/announcement data after anonymous sign-in.
+- Players can write only their own profile and registration.
+- Wallet writes, match writes, tournament management and announcements are admin-only.
+- Admin access is controlled by `admins/{uid}`.
+
+Apply the rules in Firebase Console → Realtime Database → Rules before using the production data store.
 
 ## Health check
 
-After deployment, open `/api/health`.
-
-- HTTP 200 with `"ok": true` means all seven variables are present.
-- HTTP 503 lists only the missing variable names; it never returns secret values.
-
-Then open `/api/firebase-config`. A valid deployment returns the seven Firebase Web configuration fields. If it returns 404, the deployed Vercel project is not deploying this repository's `/api` directory.
+Open `/api/health` after deployment. HTTP 200 with `ok: true` means all seven Firebase variables are present. `/api/firebase-config` returns only the Firebase Web configuration and never a service-account key.
