@@ -1,0 +1,17 @@
+{
+  "name": "esport-arena-x",
+  "version": "2.0.0",
+  "private": true,
+  "description": "E-Sport Tournament Arena X — secure Firebase Realtime Database + Vercel app. Zero secrets in repo.",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node -e \"for (const f of ['api/command.js','api/config.js','api/health.js','api/runtime.js','api/_admin.js','assets/js/boot.js','assets/js/user-app.js','assets/js/admin-app.js']) { require('child_process').execSync('node --check '+f, {stdio:'inherit'}); } console.log('build: syntax OK');\"",
+    "check": "npm run build"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

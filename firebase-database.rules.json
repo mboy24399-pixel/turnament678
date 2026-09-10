@@ -1,0 +1,93 @@
+{
+  "rules": {
+    ".read": "root.child('adminConfig/adminUid').val() === auth.uid",
+    ".write": "root.child('adminConfig/adminUid').val() === auth.uid",
+
+    "games": { ".read": true, ".indexOn": ["active", "order"] },
+    "promotions": { ".read": true, ".indexOn": ["active", "order"] },
+    "settings": { ".read": true },
+
+    "notifications": {
+      ".read": "auth != null",
+      ".indexOn": ["createdAt"]
+    },
+
+    "tournaments": {
+      ".indexOn": ["gameId", "status", "matchDate"],
+      ".read": "auth != null",
+      "$tournamentId": {
+        ".read": "auth != null",
+        "registeredPlayers": {
+          ".read": "auth != null",
+          "$uid": { ".read": "auth != null" }
+        }
+      }
+    },
+
+    "chats": {
+      "$tournamentId": {
+        ".indexOn": ["timestamp"],
+        ".read": "auth != null",
+        "$messageId": {
+          ".read": "auth != null",
+          ".write": "auth != null && (data.child('uid').val() === auth.uid || !data.exists())",
+          "uid": { ".validate": "newData.val() === auth.uid && !data.exists()" },
+          "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
+          "timestamp": { ".validate": "newData.isNumber()" }
+        }
+      }
+    },
+
+    "users": {
+      ".read": false,
+      ".indexOn": ["referralCode", "leaderboardRank", "points", "createdAt"],
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)",
+        ".write": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)",
+        "tickets": { ".validate": "newData.isNumber() && newData.val() >= 0 && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid)" },
+        "bonusTickets": { ".validate": "newData.isNumber() && newData.val() >= 0 && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid)" },
+        "totalEarnings": { ".validate": "newData.isNumber() && newData.val() >= 0 && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid)" },
+        "points": { ".validate": "!newData.exists() || (newData.isNumber() && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid))" },
+        "leaderboardRank": { ".validate": "!newData.exists() || (newData.isNumber() && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid))" },
+        "matchesPlayed": { ".validate": "!newData.exists() || (newData.isNumber() && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid))" },
+        "matchesWon": { ".validate": "!newData.exists() || (newData.isNumber() && (data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid))" },
+        "blocked": { ".validate": "!newData.exists() || data.val() === newData.val() || root.child('adminConfig/adminUid').val() === auth.uid" },
+        "referralCode": { ".validate": "!newData.exists() || newData.isString()" },
+        "name": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 60)" },
+        "photoURL": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 500)" },
+        "notifications": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)",
+          "$nid": {
+            ".read": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)",
+            ".write": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)"
+          }
+        },
+        "adRewards": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)"
+        }
+      }
+    },
+
+    "transactions": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminConfig/adminUid').val() === auth.uid)",
+        ".indexOn": ["ts", "type"]
+      }
+    },
+
+    "withdrawals": { ".indexOn": ["status", "uid", "createdAt"] },
+    "deposits": { ".indexOn": ["status", "uid", "createdAt"] },
+    "pendingReferrals": { ".indexOn": ["status", "code", "createdAt"] },
+
+    "auditLog": {
+      ".read": "root.child('adminConfig/adminUid').val() === auth.uid",
+      ".indexOn": ["ts", "action"]
+    },
+    "idempotency": {},
+
+    "adminConfig": {
+      ".read": true,
+      ".write": "!data.exists() && auth != null"
+    }
+  }
+}

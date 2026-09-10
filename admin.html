@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arena X — Admin Panel</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#0b1226" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="/assets/css/admin.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="adminLoader"><div class="spinner-border text-warning" role="status"></div></div>
+
+  <header class="admin-topbar">
+    <button class="menu-toggle-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#adSidebar" aria-controls="adSidebar">☰</button>
+    <div class="brand"><img id="adLogo" src="https://via.placeholder.com/68/FFFFFF/0F172A?text=A" alt="" /><span id="adBrand">Arena X · Admin</span></div>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span class="badge bg-success" id="adHealthBadge">● …</span>
+      <span class="small d-none d-md-inline" style="color:var(--ad-muted)" id="adEmailShort"></span>
+      <a class="btn-ad btn-ghost btn-sm" href="/index.html">View App</a>
+      <button class="btn-ad btn-ghost btn-sm" id="adLogoutBtn" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="adSidebar" aria-labelledby="adSidebarLabel">
+    <div class="offcanvas-header"><h5 class="offcanvas-title" id="adSidebarLabel">Admin Menu</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button></div>
+    <div class="offcanvas-body">
+      <ul class="nav flex-column gap-1" id="adNav">
+        <li class="nav-item"><a class="nav-link active" href="#" data-section="dashboard-section"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="games-section"><i class="bi bi-joystick"></i> Games</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="promotions-section"><i class="bi bi-megaphone-fill"></i> Promotions</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="tournaments-section"><i class="bi bi-trophy-fill"></i> Tournaments</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="tournament-management-section"><i class="bi bi-kanban-fill"></i> Match Control</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="leaderboard-mgt-section"><i class="bi bi-bar-chart-line-fill"></i> Leaderboard Mgt</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="users-section"><i class="bi bi-people-fill"></i> Users</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="user-analytics-section"><i class="bi bi-pie-chart-fill"></i> User Analytics</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="notifications-section"><i class="bi bi-bell-fill"></i> Notifications</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="transactions-section"><i class="bi bi-receipt"></i> Transactions</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="withdrawals-section"><i class="bi bi-cash-stack"></i> Withdrawals <span class="badge bg-danger ms-1" id="adWdBadge" style="display:none">0</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="deposit-section"><i class="bi bi-bank"></i> Recharges <span class="badge bg-warning ms-1" id="adDpBadge" style="display:none">0</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="referrals-section"><i class="bi bi-gift-fill"></i> Referrals <span class="badge bg-info ms-1" id="adRefBadge" style="display:none">0</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="theme-section"><i class="bi bi-palette-fill"></i> Theme</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="settings-section"><i class="bi bi-gear-fill"></i> Settings</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="audit-section"><i class="bi bi-shield-check"></i> Audit &amp; Health</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <main class="admin-wrap">
+    <div id="adConfigError"></div>
+
+    <!-- SETUP -->
+    <div class="ad-card login-shell" id="adSetupBox" style="display:none">
+      <h5>🚀 First-time Admin Setup</h5>
+      <p class="small" style="color:var(--ad-muted)">No admin exists yet. Login below and this account will become the super admin (one-time only).</p>
+      <div class="mb-2"><label class="form-label">Email</label><input class="form-control" id="adSetupEmail" type="email" /></div>
+      <div class="mb-2"><label class="form-label">Password</label><input class="form-control" id="adSetupPass" type="password" /></div>
+      <div class="d-grid"><button class="btn-ad btn-gold" id="adSetupBtn">Setup &amp; Claim Admin</button></div>
+      <div id="adSetupMsg" class="mt-2"></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="ad-card login-shell" id="adLoginBox">
+      <h5>🔐 Admin Login</h5>
+      <p class="small" style="color:var(--ad-muted)">Only the designated admin account can enter. UID must match <span class="mono">adminConfig/adminUid</span> or <span class="mono">ADMIN_UIDS</span>.</p>
+      <div class="mb-2"><label class="form-label">Email</label><input class="form-control" id="adLoginEmail" type="email" autocomplete="username" /></div>
+      <div class="mb-2"><label class="form-label">Password</label><input class="form-control" id="adLoginPass" type="password" autocomplete="current-password" /></div>
+      <div class="d-grid"><button class="btn-ad btn-gold" id="adLoginBtn">Login</button></div>
+      <div id="adLoginMsg" class="mt-2"></div>
+    </div>
+
+    <div id="adDash" style="display:none">
+      <!-- DASHBOARD -->
+      <section id="dashboard-section" class="section active">
+        <h4>📊 Dashboard</h4>
+        <div class="stat-grid" id="adStats"></div>
+        <div class="ad-card"><h5>New users (last 14 days)</h5><canvas id="adUserChart" height="120"></canvas></div>
+        <div class="ad-card"><h5>Quick actions</h5>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn-ad btn-blue btn-sm" id="adSeedBtn">🌱 Seed demo data</button>
+            <button class="btn-ad btn-gold btn-sm" id="adRecomputeBtn">🏆 Recompute leaderboard</button>
+            <button class="btn-ad btn-ghost btn-sm" id="adRefreshDash">↻ Refresh</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAMES -->
+      <section id="games-section" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h4>🎮 Games</h4><button class="btn-ad btn-gold btn-sm" id="adGameNew">+ New Game</button></div>
+        <div id="adGamesList"></div>
+      </section>
+
+      <!-- PROMOTIONS -->
+      <section id="promotions-section" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h4>📣 Promotions</h4><button class="btn-ad btn-gold btn-sm" id="adPromoNew">+ New Promotion</button></div>
+        <div id="adPromoList"></div>
+      </section>
+
+      <!-- TOURNAMENTS -->
+      <section id="tournaments-section" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-2"><h4>🏆 Tournaments</h4><button class="btn-ad btn-gold btn-sm" id="adTourNew">+ New Tournament</button></div>
+        <div id="adTourList"></div>
+      </section>
+
+      <!-- MATCH CONTROL -->
+      <section id="tournament-management-section" class="section">
+        <h4>🎛 Match Control</h4>
+        <div class="ad-card">
+          <label class="form-label">Select tournament</label>
+          <select class="form-select" id="adMcTour"></select>
+        </div>
+        <div class="ad-card"><h5>🔑 Room credentials</h5>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">Room ID</label><input class="form-control" id="adMcRoomId" /></div>
+            <div class="col-md-4"><label class="form-label">Room Password</label><input class="form-control" id="adMcRoomPass" /></div>
+            <div class="col-md-4"><label class="form-label">Visible to players</label><select class="form-select" id="adMcShow"><option value="true">Yes</option><option value="false">No</option></select></div>
+          </div>
+          <button class="btn-ad btn-blue btn-sm mt-2" id="adMcRoomSave">Save room + notify players</button>
+        </div>
+        <div class="ad-card"><h5>👥 Registered players <button class="btn-ad btn-ghost btn-sm ms-2" id="adMcPdf">⬇ PDF</button></h5><div id="adMcPlayers"></div></div>
+        <div class="ad-card"><h5>🏁 Declare winners (auto-pays prizes)</h5>
+          <div id="adWinRows"></div>
+          <button class="btn-ad btn-ghost btn-sm" id="adWinAdd">+ Add winner row</button>
+          <div class="mt-2"><label class="form-label">Result note</label><input class="form-control" id="adWinNote" placeholder="Final standings…" /></div>
+          <button class="btn-ad btn-gold btn-sm mt-2" id="adWinGo">🏆 Declare + pay all</button>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD MGT -->
+      <section id="leaderboard-mgt-section" class="section">
+        <h4>🏆 Leaderboard Management</h4>
+        <div class="ad-card"><div class="d-flex gap-2 flex-wrap">
+          <input class="form-control" style="max-width:280px" id="adLbSearch" placeholder="🔍 Search user…" />
+          <button class="btn-ad btn-gold btn-sm" id="adLbRecompute">↻ Recompute ranks</button>
+        </div></div>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>Rank</th><th>User</th><th>Points</th><th>Earnings</th><th>W/M</th></tr></thead><tbody id="adLbRows"></tbody></table></div>
+      </section>
+
+      <!-- USERS -->
+      <section id="users-section" class="section">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2"><h4>👥 Users</h4>
+          <div class="d-flex gap-2"><button class="btn-ad btn-ghost btn-sm" id="adUserPdf">⬇ PDF</button><button class="btn-ad btn-gold btn-sm" id="adUserNew">+ Add User</button></div>
+        </div>
+        <div class="ad-card"><div class="d-flex gap-2"><input class="form-control" id="adUserSearch" placeholder="🔍 Search name / email / UID / referral" /><button class="btn-ad btn-blue btn-sm" id="adUserRefresh">↻</button></div></div>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>User</th><th>Tickets</th><th>Bonus</th><th>Ref code</th><th>Status</th><th></th></tr></thead><tbody id="adUserRows"></tbody></table></div>
+        <div class="ad-card mt-3"><h5>➕➖ Adjust balance (server + ledger + notify)</h5>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">UID</label><input class="form-control mono" id="adAdjUid" /></div>
+            <div class="col-md-2"><label class="form-label">Tickets ±</label><input class="form-control" id="adAdjT" type="number" value="0" /></div>
+            <div class="col-md-2"><label class="form-label">Bonus ±</label><input class="form-control" id="adAdjB" type="number" value="0" /></div>
+            <div class="col-md-4"><label class="form-label">Reason</label><input class="form-control" id="adAdjReason" placeholder="Bonus / correction…" /></div>
+          </div>
+          <div class="d-flex gap-2 mt-2 flex-wrap"><button class="btn-ad btn-gold btn-sm" id="adAdjGo">Apply</button><button class="btn-ad btn-red btn-sm" id="adBlockBtn">⛔ Block/Unblock</button></div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section id="user-analytics-section" class="section">
+        <h4>📈 User Analytics</h4>
+        <div class="stat-grid" id="adAnaStats"></div>
+        <div class="ad-card"><h5>🏅 Most active players</h5><div id="adMostActive"></div></div>
+        <div class="ad-card"><h5>💤 Inactive (7+ days, has balance)</h5><div id="adInactive"></div></div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section id="notifications-section" class="section">
+        <h4>🔔 Notifications</h4>
+        <div class="ad-card"><h5>📢 Global (all players)</h5>
+          <div class="row g-2"><div class="col-md-4"><label class="form-label">Title</label><input class="form-control" id="adGnTitle" /></div>
+          <div class="col-md-8"><label class="form-label">Message</label><input class="form-control" id="adGnMsg" /></div>
+          <div class="col-md-8"><label class="form-label">Image URL (optional)</label><input class="form-control" id="adGnImg" /></div></div>
+          <button class="btn-ad btn-blue btn-sm mt-2" id="adGnSend">Send global</button>
+        </div>
+        <div class="ad-card"><h5>👤 Individual</h5>
+          <div class="row g-2"><div class="col-md-4"><label class="form-label">UID</label><input class="form-control mono" id="adInUid" /></div>
+          <div class="col-md-4"><label class="form-label">Title</label><input class="form-control" id="adInTitle" /></div>
+          <div class="col-md-8"><label class="form-label">Message</label><input class="form-control" id="adInMsg" /></div></div>
+          <button class="btn-ad btn-blue btn-sm mt-2" id="adInSend">Send to user</button>
+        </div>
+        <div class="ad-card"><h5>🕘 Global history</h5><div id="adNotifHist"></div></div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section id="transactions-section" class="section">
+        <h4>🧾 Transactions</h4>
+        <div class="ad-card"><div class="d-flex gap-2"><input class="form-control mono" style="max-width:320px" id="adTxUid" placeholder="UID for user ledger (blank = recent all)" /><button class="btn-ad btn-blue btn-sm" id="adTxLoad">Load</button></div></div>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>Time</th><th>User</th><th>Type</th><th>Reason</th><th>Amount</th></tr></thead><tbody id="adTxRows"></tbody></table></div>
+      </section>
+
+      <!-- WITHDRAWALS -->
+      <section id="withdrawals-section" class="section">
+        <h4>💸 Withdrawals</h4>
+        <ul class="nav nav-tabs mb-2" id="adWdTabs"><li class="nav-item"><button class="nav-link active" data-wd="pending">Pending</button></li><li class="nav-item"><button class="nav-link" data-wd="completed">Completed</button></li><li class="nav-item"><button class="nav-link" data-wd="rejected">Rejected</button></li></ul>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>Time</th><th>User</th><th>Amount</th><th>Method/Account</th><th>Status</th><th></th></tr></thead><tbody id="adWdRows"></tbody></table></div>
+      </section>
+
+      <!-- RECHARGES -->
+      <section id="deposit-section" class="section">
+        <h4>⚡ Recharge Requests</h4>
+        <ul class="nav nav-tabs mb-2" id="adDpTabs"><li class="nav-item"><button class="nav-link active" data-dp="pending">Pending</button></li><li class="nav-item"><button class="nav-link" data-dp="completed">Completed</button></li><li class="nav-item"><button class="nav-link" data-dp="rejected">Rejected</button></li></ul>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>Time</th><th>User</th><th>Amount</th><th>UTR</th><th>Status</th><th></th></tr></thead><tbody id="adDpRows"></tbody></table></div>
+      </section>
+
+      <!-- REFERRALS -->
+      <section id="referrals-section" class="section">
+        <h4>🎁 Referrals</h4>
+        <ul class="nav nav-tabs mb-2" id="adRefTabs"><li class="nav-item"><button class="nav-link active" data-rf="pending">Pending</button></li><li class="nav-item"><button class="nav-link" data-rf="completed">Completed</button></li></ul>
+        <div class="table-wrap"><table class="ad-tbl"><thead><tr><th>Time</th><th>New user</th><th>Code</th><th>Referrer</th><th>Status</th><th></th></tr></thead><tbody id="adRefRows"></tbody></table></div>
+      </section>
+
+      <!-- THEME -->
+      <section id="theme-section" class="section">
+        <h4>🎨 Theme</h4>
+        <div class="ad-card"><h5>Default user-app accent</h5>
+          <div class="d-flex gap-3 py-2" id="adThemeDots">
+            <div class="theme-dot" data-t="midnight" title="Midnight Gold" style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:linear-gradient(135deg,#0f172a 50%,#facc15 50%);border:3px solid transparent"></div>
+            <div class="theme-dot" data-t="crimson" title="Crimson" style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:linear-gradient(135deg,#0f172a 50%,#fb7185 50%);border:3px solid transparent"></div>
+            <div class="theme-dot" data-t="emerald" title="Emerald" style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:linear-gradient(135deg,#0f172a 50%,#34d399 50%);border:3px solid transparent"></div>
+            <div class="theme-dot" data-t="royal" title="Royal" style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:linear-gradient(135deg,#0f172a 50%,#a78bfa 50%);border:3px solid transparent"></div>
+          </div>
+          <button class="btn-ad btn-gold btn-sm" id="adThemeSave">Save theme</button>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="settings-section" class="section">
+        <h4>⚙️ App Settings</h4>
+        <div class="ad-card"><h5>Branding</h5>
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">App name</label><input class="form-control" id="stAppName" /></div>
+            <div class="col-md-6"><label class="form-label">Logo URL</label><input class="form-control" id="stLogo" /></div>
+            <div class="col-md-12"><label class="form-label">Announcement strip</label><input class="form-control" id="stAnnounce" /></div>
+          </div>
+        </div>
+        <div class="ad-card"><h5>🎬 Ad rewards</h5>
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">Tickets / ad</label><input class="form-control" id="stAdReward" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Cooldown (sec)</label><input class="form-control" id="stAdCd" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Daily limit</label><input class="form-control" id="stAdLimit" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Ad link (sponsor URL)</label><input class="form-control" id="stAdLink" /></div>
+          </div>
+        </div>
+        <div class="ad-card"><h5>💰 Money &amp; bonuses</h5>
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">Min withdraw</label><input class="form-control" id="stMinWd" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Referral bonus</label><input class="form-control" id="stRefBonus" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Join bonus</label><input class="form-control" id="stJoinBonus" type="number" /></div>
+            <div class="col-md-3"><label class="form-label">Signup bonus</label><input class="form-control" id="stSignupBonus" type="number" /></div>
+          </div>
+        </div>
+        <div class="ad-card"><h5>🏦 UPI / Support</h5>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">UPI ID</label><input class="form-control" id="stUpi" /></div>
+            <div class="col-md-4"><label class="form-label">UPI name</label><input class="form-control" id="stUpiName" /></div>
+            <div class="col-md-4"><label class="form-label">UPI QR URL</label><input class="form-control" id="stUpiQr" /></div>
+            <div class="col-md-6"><label class="form-label">Support email</label><input class="form-control" id="stSupEmail" /></div>
+            <div class="col-md-6"><label class="form-label">Support URL</label><input class="form-control" id="stSupUrl" /></div>
+          </div>
+        </div>
+        <div class="ad-card"><h5>📜 Policies</h5>
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">About</label><textarea class="form-control" id="stAbout" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Privacy</label><textarea class="form-control" id="stPrivacy" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Terms</label><textarea class="form-control" id="stTerms" rows="3"></textarea></div>
+            <div class="col-md-6"><label class="form-label">Refund</label><textarea class="form-control" id="stRefund" rows="3"></textarea></div>
+          </div>
+        </div>
+        <div class="ad-card"><h5>🛠 Maintenance</h5>
+          <select class="form-select" style="max-width:220px" id="stMaint"><option value="false">OFF (app live)</option><option value="true">ON (maintenance)</option></select>
+        </div>
+        <button class="btn-ad btn-gold" id="stSave">💾 Save all settings</button>
+      </section>
+
+      <!-- AUDIT -->
+      <section id="audit-section" class="section">
+        <h4>🛡 Audit &amp; Health</h4>
+        <div class="ad-card" id="adHealthBox">Loading…</div>
+        <div class="ad-card"><h5>📝 Admin activity log</h5><div id="adAuditList"></div></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- GAME MODAL -->
+  <div class="modal fade" id="adGameModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="adGameModalTitle">Game</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="gId" />
+      <div class="mb-2"><label class="form-label">Name</label><input class="form-control" id="gName" /></div>
+      <div class="mb-2"><label class="form-label">Image URL</label><input class="form-control" id="gImg" /></div>
+      <div class="row g-2"><div class="col-6"><label class="form-label">Order</label><input class="form-control" id="gOrder" type="number" value="0" /></div>
+      <div class="col-6"><label class="form-label">Active</label><select class="form-select" id="gActive"><option value="true">Yes</option><option value="false">No</option></select></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ad btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn-ad btn-gold btn-sm" id="gSave">Save</button></div>
+  </div></div></div>
+
+  <!-- PROMO MODAL -->
+  <div class="modal fade" id="adPromoModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Promotion</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pId" />
+      <div class="mb-2"><label class="form-label">Title</label><input class="form-control" id="pTitle" /></div>
+      <div class="mb-2"><label class="form-label">Image URL</label><input class="form-control" id="pImg" /></div>
+      <div class="mb-2"><label class="form-label">Link (optional)</label><input class="form-control" id="pLink" /></div>
+      <div class="row g-2"><div class="col-6"><label class="form-label">Order</label><input class="form-control" id="pOrder" type="number" value="0" /></div>
+      <div class="col-6"><label class="form-label">Active</label><select class="form-select" id="pActive"><option value="true">Yes</option><option value="false">No</option></select></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ad btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn-ad btn-gold btn-sm" id="pSave">Save</button></div>
+  </div></div></div>
+
+  <!-- TOURNAMENT MODAL -->
+  <div class="modal fade" id="adTourModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Tournament</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="tId" />
+      <div class="row g-2">
+        <div class="col-md-6"><label class="form-label">Name</label><input class="form-control" id="tName" /></div>
+        <div class="col-md-6"><label class="form-label">Game</label><select class="form-select" id="tGame"></select></div>
+        <div class="col-md-3"><label class="form-label">Entry fee 🎟</label><input class="form-control" id="tFee" type="number" value="10" /></div>
+        <div class="col-md-3"><label class="form-label">Prize pool 🎟</label><input class="form-control" id="tPrize" type="number" value="100" /></div>
+        <div class="col-md-3"><label class="form-label">Max players</label><input class="form-control" id="tMax" type="number" value="100" /></div>
+        <div class="col-md-3"><label class="form-label">Per-kill 🎟</label><input class="form-control" id="tKill" type="number" value="0" /></div>
+        <div class="col-md-4"><label class="form-label">Mode</label><select class="form-select" id="tMode"><option value="solo">SOLO</option><option value="duo">DUO</option></select></div>
+        <div class="col-md-4"><label class="form-label">Status</label><select class="form-select" id="tStatus"><option value="upcoming">upcoming</option><option value="ongoing">ongoing</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select></div>
+        <div class="col-md-4"><label class="form-label">Match date/time</label><input class="form-control" id="tDate" type="datetime-local" /></div>
+        <div class="col-md-6"><label class="form-label">Map</label><input class="form-control" id="tMap" /></div>
+        <div class="col-md-6"><label class="form-label">Banner URL</label><input class="form-control" id="tBanner" /></div>
+        <div class="col-md-6"><label class="form-label">Description</label><textarea class="form-control" id="tDesc" rows="3"></textarea></div>
+        <div class="col-md-6"><label class="form-label">Prize distribution</label><textarea class="form-control" id="tPD" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ad btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn-ad btn-gold btn-sm" id="tSave">Save</button></div>
+  </div></div></div>
+
+  <!-- USER MODAL -->
+  <div class="modal fade" id="adUserModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Add User</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-2"><label class="form-label">Name</label><input class="form-control" id="uName" /></div>
+      <div class="mb-2"><label class="form-label">Email</label><input class="form-control" id="uEmail" type="email" /></div>
+      <div class="mb-2"><label class="form-label">Password (min 6)</label><input class="form-control" id="uPass" type="password" /></div>
+      <div class="mb-2"><label class="form-label">Initial tickets</label><input class="form-control" id="uInit" type="number" value="0" /></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ad btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button><button class="btn-ad btn-gold btn-sm" id="uSave">Create</button></div>
+  </div></div></div>
+
+  <!-- USER DETAIL MODAL -->
+  <div class="modal fade" id="adDetailModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">User detail</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="adDetailBody"></div>
+  </div></div></div>
+
+  <!-- DECIDE MODAL -->
+  <div class="modal fade" id="adDecideModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="adDecideTitle">Review</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div id="adDecideInfo" class="mb-2 small"></div><label class="form-label">Note (shown to user on reject)</label><input class="form-control" id="adDecideNote" /></div>
+    <div class="modal-footer"><button class="btn-ad btn-red btn-sm" id="adDecideNo">❌ Reject</button><button class="btn-ad btn-green btn-sm" id="adDecideYes">✅ Approve</button></div>
+  </div></div></div>
+
+  <div id="adToasts"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="/assets/js/boot.js"></script>
+  <script src="/assets/js/admin-app.js"></script>
+</body>
+</html>
