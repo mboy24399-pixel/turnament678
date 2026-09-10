@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tournament App — Podmen X Arena</title>
+  <meta name="description" content="Join tournaments, earn coins, track live matches." />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="logo" href="/" style="color:inherit;text-decoration:none"><div class="logo-mark">🎮</div><div>Podmen X<small>Tournament Arena</small></div></a>
+      <div class="spacer"></div>
+      <div class="wallet-pill" id="walletPill" style="display:none">🪙 <span id="walletCoins">0</span></div>
+      <div class="user-chip" id="userChip" style="display:none"><img id="userPhoto" alt="" /><span id="userName"></span></div>
+      <button class="btn btn-primary btn-sm" id="loginBtn">Login with Google</button>
+      <button class="btn btn-sm" id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="configError"></div>
+    <div id="adBanner"></div>
+
+    <section class="hero">
+      <h1>Find your <span>tournament</span></h1>
+      <p>Live discovery with search + status filters. Entry is secured by the server.</p>
+      <div class="search-row">
+        <input class="input grow" id="search" placeholder="🔍 Search tournaments or games…" autocomplete="off" />
+        <select class="select" id="sortSel" style="max-width:190px">
+          <option value="new">Sort: Newest</option>
+          <option value="prize">Sort: Highest prize</option>
+          <option value="entry">Sort: Lowest entry</option>
+        </select>
+      </div>
+      <div class="chips" id="statusChips">
+        <button class="chip active" data-status="all">All</button>
+        <button class="chip" data-status="upcoming">Upcoming</button>
+        <button class="chip" data-status="live">🔴 Live</button>
+        <button class="chip" data-status="completed">Completed</button>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="tournaments">🏆 Tournaments</button>
+      <button class="tab" data-tab="matches">⚔️ My Matches</button>
+      <button class="tab" data-tab="tasks">🎁 Tasks</button>
+      <button class="tab" data-tab="wallet">🪙 Wallet</button>
+      <button class="tab" data-tab="notifs">🔔 Alerts <span id="notifDot"></span></button>
+    </nav>
+
+    <div id="announceList" class="list"></div>
+
+    <section class="panel active" id="panel-tournaments">
+      <div class="grid" id="tourList"></div>
+      <div class="empty" id="tourEmpty" style="display:none">No tournaments found. Try another search.</div>
+    </section>
+
+    <section class="panel" id="panel-matches">
+      <h2 class="section-title">⚔️ Match feed</h2>
+      <p style="color:var(--muted);font-size:13px">Matches of tournaments you joined appear first. Room ID/password unlock after joining.</p>
+      <div class="list" id="matchFeed"></div>
+    </section>
+
+    <section class="panel" id="panel-tasks">
+      <h2 class="section-title">🎁 Earn coins</h2>
+      <div class="list" id="taskList"></div>
+    </section>
+
+    <section class="panel" id="panel-wallet">
+      <h2 class="section-title">🪙 My wallet</h2>
+      <div class="row-card"><h4>Balance: 🪙 <span id="walletBig">0</span> coins</h4><p>Every credit/debit is written by the server with a ledger entry.</p></div>
+      <div class="list" id="ledgerList"></div>
+    </section>
+
+    <section class="panel" id="panel-notifs">
+      <h2 class="section-title">🔔 Announcements & notifications</h2>
+      <div class="list" id="notifList"></div>
+      <h2 class="section-title">🏁 Latest results</h2>
+      <div class="list" id="resultList"></div>
+    </section>
+
+    <div class="footer">Podmen X Tournament Arena · <a href="/admin.html">Admin Panel</a> · <a href="/api/health">API Health</a></div>
+  </main>
+
+  <!-- Join modal -->
+  <div class="modal-back" id="joinModal">
+    <div class="modal">
+      <h3 id="joinTitle">Join tournament</h3>
+      <p style="color:var(--muted);font-size:13px" id="joinInfo"></p>
+      <label class="lbl">In-game name (IGN)
+        <input class="input" id="ignInput" placeholder="e.g. PodmenX_Pro" maxlength="60" />
+      </label>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn btn-block" id="joinCancel">Cancel</button>
+        <button class="btn btn-primary btn-block" id="joinConfirm">Confirm Join</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task proof modal (manual verification tasks) -->
+  <div class="modal-back" id="proofModal">
+    <div class="modal">
+      <h3>Submit proof</h3>
+      <p style="color:var(--muted);font-size:13px">This task needs admin verification. Paste your proof (username / link / screenshot URL).</p>
+      <label class="lbl">Proof
+        <input class="input" id="proofInput" placeholder="Proof link or username" maxlength="500" />
+      </label>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn btn-block" id="proofCancel">Cancel</button>
+        <button class="btn btn-gold btn-block" id="proofConfirm">Submit claim</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

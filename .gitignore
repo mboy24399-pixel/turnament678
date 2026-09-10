@@ -1,0 +1,25 @@
+# deps / build
+node_modules/
+.vercel/
+out/
+dist/
+build/
+
+# local env — NEVER commit real credentials
+.env
+.env.local
+.env*.local
+.env.production
+
+# service account keys — NEVER commit
+*-firebase-adminsdk-*.json
+service-account*.json
+serviceAccount*.json
+firebase-adminsdk*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
